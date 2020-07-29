@@ -1,8 +1,10 @@
 <html> 
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/test/ace.js"></script>
-    <script src="http://www.skulpt.org/js/skulpt.min.js" type="text/javascript"></script> 
-    <script src="http://www.skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.0.0/dist/skulpt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.0.0/dist/skulpt-stdlib.min.js"></script>
+    <!-- <script src="https://www.skulpt.org/js/skulpt.min.js" type="text/javascript"></script>  -->
+    <!-- <script src="https://www.skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script> -->
     <script src="https://code.createjs.com/1.0.0/tweenjs.min.js"></script>
     <script src="https://env3d.github.io/env3d-js/dist/js/inflate.min.js"></script>
     <script src="https://env3d.github.io/env3d-js/dist/js/env3d.js"></script>
@@ -10,6 +12,15 @@
       #editor {
 	  height: 300px;
       }
+
+      main {
+	  display: grid;
+      }
+
+      section {
+	  width: 50%;
+      }
+      
     </style>
   </head> 
 
@@ -61,9 +72,7 @@
 	editor = ace.edit("editor");
 	editor.setTheme("ace/theme/monokai");
 	editor.session.setMode("ace/mode/python");
-	
-
-	
+		
 	fetch('./env3d.js')
 	  .then( res => res.text() )
 	  .then( env3d => {
@@ -76,36 +85,27 @@
 	env.setCameraXYZ(5,5,25);
 	env.start();
 
+	fetch('./example.py')
+	  .then( res => res.text() )
+	  .then( body => {
+	    editor.setValue(body);
+	    editor.clearSelection();
+	  });
+	
       });
       </script> 
 
-    <h3>Try This</h3> 
-    <div id="editor">
-print "Hello World"
-import env3d
-
-def object1():
-    myobj = env3d.GameObject()
-    myobj.set_texture('textures/doty.png')
-    for i in range(5):
-        myobj.move_to(5,5,5)
-        myobj.move_to(9,5,5)
-    return myobj
-
-def object2():
-    myobj2 = env3d.GameObject()
-    myobj2.move_to(5,1,5)
-    myobj2.move_to(9,1,5)
-    myobj2.set_texture('textures/doty.png')
-    return myobj2
-
-object2().on_complete(object1)
-    </div><br /> 
-    <button type="button" onclick="runit()">Run</button> 
-
-    <pre id="output" ></pre> 
-    <div id="env3d" style="width: 300px; height: 300px"></div>
-
+    <main>
+      <section>
+	<div id="editor">
+	</div>
+	<button type="button" onclick="runit()">Run</button> 
+	<pre id="output" ></pre>
+      </section>
+      <section>
+	<div id="env3d"></div>
+      </section>
+    </main>
 
   </body> 
 
