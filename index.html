@@ -14,11 +14,16 @@
       }
 
       main {
-	  display: grid;
+	  display: flex;
       }
 
       section {
 	  width: 50%;
+      }
+
+      iframe {
+	  width: 100%;
+	  height: 100%;
       }
       
     </style>
@@ -48,13 +53,18 @@
       // configure the output function
       // call Sk.importMainWithBody()
       function runit() { 
-	var prog = editor.getValue();
+	//var prog = editor.getValue();	  
+	//  document.querySelector('iframe').contentWindow.postMessage(prog);
+
+	document.querySelector('iframe').contentWindow.location.reload(true);
+	
+	/*
 	var mypre = document.getElementById("output"); 
 	mypre.innerHTML = '';
 	
 	Sk.pre = "output";
 	Sk.configure({output:outf, read:builtinRead});
-	
+
 	var myPromise = Sk.misceval.asyncToPromise(function() {
 	  return Sk.importMainWithBody("<stdin>", false, prog, true);
 	});
@@ -63,16 +73,36 @@
 	},function(err) {
 	  console.log(err.toString());
 	});
+	*/
 
       }
 
       createjs.Ticker.setFPS(30);
 
+      window.addEventListener('message', evt => {
+	if (evt.data == 'env3d_loaded') {
+	  var prog = editor.getValue();	  
+	  document.querySelector('iframe').contentWindow.postMessage(prog);	  
+	}
+      });
+      
       window.addEventListener('load', () => {
 	editor = ace.edit("editor");
 	editor.setTheme("ace/theme/monokai");
 	editor.session.setMode("ace/mode/python");
-		
+	
+	fetch('./example.py')
+	  .then( res => res.text() )
+	  .then( body => {
+	    editor.setValue(body);
+	    editor.clearSelection();
+	  });
+
+	document.querySelector('iframe').addEventListener('load', () => {
+	  console.log('iframe loaded');
+	});
+
+	/*
 	fetch('./env3d.js')
 	  .then( res => res.text() )
 	  .then( env3d => {
@@ -85,13 +115,7 @@
 	env.setCameraXYZ(5,5,25);
 	env.start();
 
-	fetch('./example.py')
-	  .then( res => res.text() )
-	  .then( body => {
-	    editor.setValue(body);
-	    editor.clearSelection();
-	  });
-	
+	*/
       });
       </script> 
 
@@ -103,7 +127,9 @@
 	<pre id="output" ></pre>
       </section>
       <section>
-	<div id="env3d"></div>
+	<!-- <div id="env3d"></div>-->
+	<iframe src="env3d.html"></iframe>
+	
       </section>
     </main>
 

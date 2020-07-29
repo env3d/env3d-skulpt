@@ -1,0 +1,89 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.0.0/dist/skulpt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.0.0/dist/skulpt-stdlib.min.js"></script>
+    <script src="https://code.createjs.com/1.0.0/tweenjs.min.js"></script>
+    <script src="https://env3d.github.io/env3d-js/dist/js/inflate.min.js"></script>
+    <script src="https://env3d.github.io/env3d-js/dist/js/env3d.js"></script>
+    <style>
+      body {
+	  margin: 0;
+	  padding: 0;
+      }
+      
+      #editor {
+	  height: 300px;
+      }
+
+      main {
+	  display: grid;
+      }
+
+      section {
+	  width: 50%;
+      }
+      
+    </style>
+  </head> 
+
+  <body>
+    
+    <div id="env3d"></div>
+    <div id="output"></div>
+    
+    <script type="text/javascript">
+      var env = null;
+      var editor = null; 
+      
+      // output functions are configurable.  This one just appends some text
+      // to a pre element.
+      function outf(text) { 
+	var mypre = document.getElementById("output"); 
+	mypre.innerHTML = mypre.innerHTML + text; 
+      } 
+      function builtinRead(x) {
+	if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+          throw "File not found: '" + x + "'";
+	return Sk.builtinFiles["files"][x];
+      }
+      
+      createjs.Ticker.setFPS(30);
+
+      fetch('./env3d.js').then( res => res.text() ).then( env3d => {
+	console.log('injecting env3d', env3d);
+	Sk.builtinFiles["files"]['src/lib/env3d.js'] = env3d;
+	window.parent.postMessage('env3d_loaded');
+      });
+      
+      env3d.Env.baseAssetsUrl = "https://env3d.github.io/env3d-js/dist/";
+      env = new env3d.Env();
+      env.setCameraXYZ(5,5,25);
+      env.start();	
+
+      // Here we grab the code from the message
+      // this is called using postmessage from the parent frame
+      window.addEventListener('message', function(evt) { 
+	var prog = evt.data;
+	var mypre = document.getElementById("output"); 
+	mypre.innerHTML = '';
+	
+	Sk.pre = "output";
+	Sk.configure({output:outf, read:builtinRead});
+	
+	var myPromise = Sk.misceval.asyncToPromise(function() {
+	  return Sk.importMainWithBody("<stdin>", false, prog, true);
+	});
+	myPromise.then(function(mod) {
+	  console.log('success');
+	},function(err) {
+	  console.log(err.toString());
+	});
+
+      });
+
+      
+      </script> 
+
+  </body> 
+
+</html> 
